@@ -8,6 +8,7 @@ import (
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/csidrivers"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/csinodes"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/csistoragecapacities"
+	"github.com/loft-sh/vcluster/pkg/controllers/resources/deviceclasses"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/endpoints"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/endpointslices"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/events"
@@ -25,6 +26,8 @@ import (
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/pods"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/priorityclasses"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/referencegrants"
+	"github.com/loft-sh/vcluster/pkg/controllers/resources/resourceclaims"
+	"github.com/loft-sh/vcluster/pkg/controllers/resources/resourceclaimtemplates"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/runtimeclasses"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/secrets"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/serviceaccounts"
@@ -77,6 +80,9 @@ func getSyncers(ctx *synccontext.RegisterContext) []BuildController {
 		isEnabled(ctx.Config.Sync.FromHost.CSIDrivers.Enabled == "true", csidrivers.New),
 		isEnabled(ctx.Config.Sync.FromHost.CSIStorageCapacities.Enabled == "true", csistoragecapacities.New),
 		isEnabled(ctx.Config.Sync.ToHost.Namespaces.Enabled, namespaces.New),
+		isEnabled(ctx.Config.Sync.ToHost.ResourceClaims.Enabled, resourceclaims.New),
+		isEnabled(ctx.Config.Sync.ToHost.ResourceClaimTemplates.Enabled, resourceclaimtemplates.New),
+		isEnabled(ctx.Config.Sync.FromHost.DeviceClasses.Enabled, deviceclasses.New),
 		persistentvolumes.New,
 		nodes.New,
 	}, ExtraControllers...)
