@@ -21,6 +21,7 @@ import (
 	resourcev1 "k8s.io/api/resource/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	utilversion "k8s.io/apimachinery/pkg/util/version"
 	"k8s.io/client-go/tools/events"
 	"k8s.io/utils/ptr"
@@ -819,6 +820,7 @@ func TestDiffResourceClaimStatus(t *testing.T) {
 		vPod           *corev1.Pod
 		pPod           *corev1.Pod
 		hostClaims     []*resourcev1.ResourceClaim
+		storeMappings  []synccontext.NameMapping
 		expectedStatus []corev1.PodResourceClaimStatus
 	}{
 		{
@@ -866,6 +868,56 @@ func TestDiffResourceClaimStatus(t *testing.T) {
 				{
 					Name:              "my-claim",
 					ResourceClaimName: ptr.To("virtual-claim"),
+				},
+			},
+		},
+		{
+			name: "Translate store-backed generated resource claim name",
+			vPod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-pod",
+					Namespace: vNamespace,
+				},
+				Status: corev1.PodStatus{
+					ResourceClaimStatuses: []corev1.PodResourceClaimStatus{},
+				},
+			},
+			pPod: &corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-pod-x-default-x-123",
+					Namespace: pNamespace,
+				},
+				Status: corev1.PodStatus{
+					ResourceClaimStatuses: []corev1.PodResourceClaimStatus{
+						{
+							Name:              "my-claim",
+							ResourceClaimName: ptr.To("host-generated-claim"),
+						},
+					},
+				},
+			},
+			hostClaims: []*resourcev1.ResourceClaim{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "host-generated-claim",
+						Namespace: pNamespace,
+						Annotations: map[string]string{
+							resourcev1.PodResourceClaimAnnotation: "my-claim",
+						},
+					},
+				},
+			},
+			storeMappings: []synccontext.NameMapping{
+				{
+					GroupVersionKind: mappings.ResourceClaims(),
+					HostName:         types.NamespacedName{Namespace: pNamespace, Name: "host-generated-claim"},
+					VirtualName:      types.NamespacedName{Namespace: vNamespace, Name: "virtual-generated-claim"},
+				},
+			},
+			expectedStatus: []corev1.PodResourceClaimStatus{
+				{
+					Name:              "my-claim",
+					ResourceClaimName: ptr.To("virtual-generated-claim"),
 				},
 			},
 		},
@@ -956,6 +1008,9 @@ func TestDiffResourceClaimStatus(t *testing.T) {
 			assert.NilError(t, registerCtx.Mappings.AddMapper(resourceClaimMapper))
 
 			syncCtx := registerCtx.ToSyncContext("test")
+			for _, mapping := range tc.storeMappings {
+				assert.NilError(t, registerCtx.Mappings.Store().AddReferenceAndSave(syncCtx, mapping, mapping))
+			}
 
 			fakeRecorder := events.NewFakeRecorder(10)
 			tr := &translator{

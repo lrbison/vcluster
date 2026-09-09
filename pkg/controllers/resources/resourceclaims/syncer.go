@@ -27,7 +27,7 @@ func New(ctx *synccontext.RegisterContext) (syncertypes.Object, error) {
 
 	return &resourceClaimSyncer{
 		GenericTranslator: translator.NewGenericTranslator(ctx, "resourceclaim", &resourcev1.ResourceClaim{}, mapper),
-		Importer:          pro.NewImporter(mapper),
+		Importer:          newGeneratedResourceClaimImporter(pro.NewImporter(mapper)),
 	}, nil
 }
 
@@ -51,6 +51,12 @@ func (s *resourceClaimSyncer) Syncer() syncertypes.Sync[client.Object] {
 }
 
 func (s *resourceClaimSyncer) SyncToHost(ctx *synccontext.SyncContext, event *synccontext.SyncToHostEvent[*resourcev1.ResourceClaim]) (ctrl.Result, error) {
+	if isGeneratedResourceClaimMirror(event.Virtual) {
+		reason := fmt.Sprintf("host ResourceClaim for generated mirror %s/%s is missing", event.Virtual.Namespace, event.Virtual.Name)
+		s.EventRecorder().Eventf(event.Virtual, nil, "Warning", "SyncWarning", "SyncResourceClaim", "Deleting virtual ResourceClaim: %s", reason)
+		return patcher.DeleteVirtualObject(ctx, event.Virtual, event.HostOld, reason)
+	}
+
 	if s.applyLimitByClass(ctx, event.Virtual) {
 		return ctrl.Result{}, nil
 	}
@@ -69,6 +75,10 @@ func (s *resourceClaimSyncer) SyncToHost(ctx *synccontext.SyncContext, event *sy
 }
 
 func (s *resourceClaimSyncer) Sync(ctx *synccontext.SyncContext, event *synccontext.SyncEvent[*resourcev1.ResourceClaim]) (_ ctrl.Result, retErr error) {
+	if isGeneratedResourceClaimMirror(event.Virtual) || isHostGeneratedResourceClaim(event.Host) {
+		return s.syncGeneratedResourceClaimMirror(ctx, event)
+	}
+
 	if s.applyLimitByClass(ctx, event.Virtual) {
 		return ctrl.Result{}, nil
 	}
@@ -113,6 +123,10 @@ func (s *resourceClaimSyncer) Sync(ctx *synccontext.SyncContext, event *synccont
 }
 
 func (s *resourceClaimSyncer) SyncToVirtual(ctx *synccontext.SyncContext, event *synccontext.SyncToVirtualEvent[*resourcev1.ResourceClaim]) (_ ctrl.Result, retErr error) {
+	if isHostGeneratedResourceClaim(event.Host) {
+		return s.syncGeneratedResourceClaimToVirtual(ctx, event)
+	}
+
 	if event.VirtualOld != nil || translate.ShouldDeleteHostObject(event.Host) {
 		return patcher.DeleteHostObject(ctx, event.Host, event.VirtualOld, "virtual object was deleted")
 	}
