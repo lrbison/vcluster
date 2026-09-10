@@ -26,11 +26,13 @@ func New(ctx *synccontext.RegisterContext) (syncertypes.Object, error) {
 
 	return &resourceClaimTemplateSyncer{
 		GenericTranslator: translator.NewGenericTranslator(ctx, "resourceclaimtemplate", &resourcev1.ResourceClaimTemplate{}, mapper),
+		Importer:          newComputeDomainChannelTemplateImporter(pro.NewImporter(mapper)),
 	}, nil
 }
 
 type resourceClaimTemplateSyncer struct {
 	syncertypes.GenericTranslator
+	syncertypes.Importer
 }
 
 var _ syncertypes.OptionsProvider = &resourceClaimTemplateSyncer{}
@@ -48,6 +50,12 @@ func (s *resourceClaimTemplateSyncer) Syncer() syncertypes.Sync[client.Object] {
 }
 
 func (s *resourceClaimTemplateSyncer) SyncToHost(ctx *synccontext.SyncContext, event *synccontext.SyncToHostEvent[*resourcev1.ResourceClaimTemplate]) (ctrl.Result, error) {
+	if isGeneratedComputeDomainChannelTemplateMirror(event.Virtual) {
+		reason := fmt.Sprintf("host ResourceClaimTemplate for generated ComputeDomain channel mirror %s/%s is missing", event.Virtual.Namespace, event.Virtual.Name)
+		s.EventRecorder().Eventf(event.Virtual, nil, "Warning", "SyncWarning", "SyncResourceClaimTemplate", "Deleting virtual ResourceClaimTemplate: %s", reason)
+		return patcher.DeleteVirtualObject(ctx, event.Virtual, event.HostOld, reason)
+	}
+
 	if s.applyLimitByClass(ctx, event.Virtual) {
 		return ctrl.Result{}, nil
 	}
@@ -66,6 +74,14 @@ func (s *resourceClaimTemplateSyncer) SyncToHost(ctx *synccontext.SyncContext, e
 }
 
 func (s *resourceClaimTemplateSyncer) Sync(ctx *synccontext.SyncContext, event *synccontext.SyncEvent[*resourcev1.ResourceClaimTemplate]) (_ ctrl.Result, retErr error) {
+	isGenerated, err := isHostGeneratedComputeDomainChannelTemplate(ctx, event.Host)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	if isGeneratedComputeDomainChannelTemplateMirror(event.Virtual) || isGenerated {
+		return s.syncGeneratedComputeDomainChannelTemplateMirror(ctx, event)
+	}
+
 	if s.applyLimitByClass(ctx, event.Virtual) {
 		return ctrl.Result{}, nil
 	}
@@ -99,5 +115,11 @@ func (s *resourceClaimTemplateSyncer) Sync(ctx *synccontext.SyncContext, event *
 }
 
 func (s *resourceClaimTemplateSyncer) SyncToVirtual(ctx *synccontext.SyncContext, event *synccontext.SyncToVirtualEvent[*resourcev1.ResourceClaimTemplate]) (_ ctrl.Result, retErr error) {
+	if isGenerated, err := isHostGeneratedComputeDomainChannelTemplate(ctx, event.Host); err != nil {
+		return ctrl.Result{}, err
+	} else if isGenerated {
+		return s.syncGeneratedComputeDomainChannelTemplateToVirtual(ctx, event)
+	}
+
 	return patcher.DeleteHostObject(ctx, event.Host, event.VirtualOld, "virtual object was deleted")
 }

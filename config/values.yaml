@@ -74,6 +74,8 @@ sync:
       enabled: false
     resourceClaimTemplates:
       enabled: false
+    computeDomains:
+      enabled: false
 
   fromHost:
     events:

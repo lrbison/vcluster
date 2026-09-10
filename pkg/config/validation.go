@@ -76,6 +76,11 @@ func ValidateConfigAndSetDefaults(vConfig *VirtualClusterConfig) error {
 		}
 	}
 
+	if vConfig.Sync.ToHost.ComputeDomains.Enabled {
+		vConfig.Sync.ToHost.ResourceClaims.Enabled = true
+		vConfig.Sync.ToHost.ResourceClaimTemplates.Enabled = true
+	}
+
 	// check if embedded database and multiple replicas
 	if vConfig.Config.BackingStoreType() == config.StoreTypeEmbeddedDatabase && vConfig.ControlPlane.StatefulSet.HighAvailability.Replicas > 1 {
 		return fmt.Errorf("embedded database is not supported with multiple replicas")

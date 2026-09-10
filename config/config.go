@@ -1163,6 +1163,10 @@ func (c *Config) IsProFeatureEnabled() bool {
 		return true
 	}
 
+	if c.Sync.ToHost.ComputeDomains.Enabled {
+		return true
+	}
+
 	if c.Sync.FromHost.DeviceClasses.Enabled {
 		return true
 	}
@@ -1360,6 +1364,9 @@ type SyncToHost struct {
 
 	// ResourceClaimTemplates defines if resourceClaimTemplates created within the virtual cluster should get synced to the host cluster.
 	ResourceClaimTemplates EnableSwitchWithPatches `json:"resourceClaimTemplates,omitempty"`
+
+	// ComputeDomains defines if NVIDIA ComputeDomains created within the virtual cluster should get synced to the host cluster.
+	ComputeDomains EnableSwitchWithPatches `json:"computeDomains,omitempty"`
 }
 
 type EnableSwitchWithPatches struct {

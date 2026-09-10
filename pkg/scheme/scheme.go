@@ -5,6 +5,7 @@ import (
 	agentstoragev1 "github.com/loft-sh/agentapi/v4/pkg/apis/loft/storage/v1"
 	managementv1 "github.com/loft-sh/api/v4/pkg/apis/management/v1"
 	"github.com/loft-sh/vcluster/pkg/apis"
+	nvidiaapis "github.com/loft-sh/vcluster/pkg/apis/nvidia"
 	apidiscoveryv2 "k8s.io/api/apidiscovery/v2"
 	apidiscoveryv2beta1 "k8s.io/api/apidiscovery/v2beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -34,6 +35,9 @@ func init() {
 
 	// Register GatewayAPI CRDs
 	_ = gatewayv1.Install(Scheme)
+
+	// Register NVIDIA resource CRDs handled with unstructured syncers.
+	_ = nvidiaapis.AddToScheme(Scheme)
 
 	// Register Loft CRDs
 	_ = agentstoragev1.AddToScheme(Scheme)

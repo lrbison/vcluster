@@ -24,6 +24,7 @@
     .Values.sync.toHost.priorityClasses.enabled
     .Values.sync.toHost.resourceClaims.enabled
     .Values.sync.toHost.resourceClaimTemplates.enabled
+    .Values.sync.toHost.computeDomains.enabled
     .Values.sync.fromHost.priorityClasses.enabled
     .Values.sync.fromHost.deviceClasses.enabled
     .Values.controlPlane.distro.k8s.scheduler.enabled
@@ -53,6 +54,7 @@
     .Values.sync.toHost.gatewayApi.httpRoutes.enabled
     .Values.sync.toHost.gatewayApi.tlsRoutes.enabled
     .Values.sync.toHost.gatewayApi.backendTLSPolicies.enabled
+    .Values.sync.toHost.computeDomains.enabled
      -}}
 {{- true -}}
 {{- end -}}
@@ -266,4 +268,3 @@
 {{- end }}
 {{- end }}
 {{- end }}
-

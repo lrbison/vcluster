@@ -5,6 +5,7 @@ import (
 	"maps"
 	"sync"
 
+	nvidiaapis "github.com/loft-sh/vcluster/pkg/apis/nvidia"
 	"github.com/loft-sh/vcluster/pkg/scheme"
 	"github.com/loft-sh/vcluster/pkg/syncer/synccontext"
 	corev1 "k8s.io/api/core/v1"
@@ -180,6 +181,14 @@ func ResourceClaims() schema.GroupVersionKind {
 
 func ResourceClaimTemplates() schema.GroupVersionKind {
 	return resourcev1.SchemeGroupVersion.WithKind("ResourceClaimTemplate")
+}
+
+func ComputeDomains() schema.GroupVersionKind {
+	return nvidiaapis.ComputeDomainGVK()
+}
+
+func ComputeDomainCliques() schema.GroupVersionKind {
+	return nvidiaapis.ComputeDomainCliqueGVK()
 }
 
 func PriorityClasses() schema.GroupVersionKind {

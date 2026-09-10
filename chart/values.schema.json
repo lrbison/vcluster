@@ -5448,6 +5448,10 @@
         "resourceClaimTemplates": {
           "$ref": "#/$defs/EnableSwitchWithPatches",
           "description": "ResourceClaimTemplates defines if resourceClaimTemplates created within the virtual cluster should get synced to the host cluster."
+        },
+        "computeDomains": {
+          "$ref": "#/$defs/EnableSwitchWithPatches",
+          "description": "ComputeDomains defines if NVIDIA ComputeDomains created within the virtual cluster should get synced to the host cluster."
         }
       },
       "additionalProperties": false,

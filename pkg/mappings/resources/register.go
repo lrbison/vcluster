@@ -38,6 +38,7 @@ func getMappers(ctx *synccontext.RegisterContext) []BuildMapper {
 		CreateStorageClassesMapper,
 		isEnabled(ctx.Config.Sync.ToHost.ResourceClaims.Enabled, CreateResourceClaimsMapper),
 		isEnabled(ctx.Config.Sync.ToHost.ResourceClaimTemplates.Enabled, CreateResourceClaimTemplatesMapper),
+		isEnabled(ctx.Config.Sync.ToHost.ComputeDomains.Enabled, CreateComputeDomainsMapper),
 		isEnabled(ctx.Config.Sync.FromHost.DeviceClasses.Enabled, CreateDeviceClassesMapper),
 	}, ExtraMappers...)
 }

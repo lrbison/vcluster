@@ -1,0 +1,33 @@
+apiVersion: resource.nvidia.com/v1beta1
+kind: ComputeDomain
+metadata:
+  name: test-compute-domain
+spec:
+  numNodes: 0
+  channel:
+    allocationMode: Single
+    resourceClaimTemplate:
+      name: test-compute-domain-channel
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cd-smoke
+spec:
+  restartPolicy: Never
+  resourceClaims:
+    - name: compute-domain-channel
+      resourceClaimTemplateName: test-compute-domain-channel
+  containers:
+    - name: sleep
+      image: ubuntu:22.04
+      command: ["bash", "-lc"]
+      args:
+        - |
+          ls -l /dev/nvidia-caps-imex-channels || true
+          sleep 3600
+      resources:
+        claims:
+          - name: compute-domain-channel
+        limits:
+          nvidia.com/gpu: "1"

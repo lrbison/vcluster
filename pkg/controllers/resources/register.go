@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/backendtlspolicies"
+	"github.com/loft-sh/vcluster/pkg/controllers/resources/computedomains"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/configmaps"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/csidrivers"
 	"github.com/loft-sh/vcluster/pkg/controllers/resources/csinodes"
@@ -82,6 +83,7 @@ func getSyncers(ctx *synccontext.RegisterContext) []BuildController {
 		isEnabled(ctx.Config.Sync.ToHost.Namespaces.Enabled, namespaces.New),
 		isEnabled(ctx.Config.Sync.ToHost.ResourceClaims.Enabled, resourceclaims.New),
 		isEnabled(ctx.Config.Sync.ToHost.ResourceClaimTemplates.Enabled, resourceclaimtemplates.New),
+		isEnabled(ctx.Config.Sync.ToHost.ComputeDomains.Enabled, computedomains.New),
 		isEnabled(ctx.Config.Sync.FromHost.DeviceClasses.Enabled, deviceclasses.New),
 		persistentvolumes.New,
 		nodes.New,

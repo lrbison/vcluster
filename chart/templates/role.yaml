@@ -122,7 +122,7 @@ rules:
     resources: ["networkpolicies"]
     verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
   {{- end }}
-  {{ if .Values.sync.toHost.resourceClaims.enabled}}
+  {{ if or .Values.sync.toHost.resourceClaims.enabled .Values.sync.toHost.computeDomains.enabled}}
   - apiGroups: ["resource.k8s.io"]
     resources: ["resourceclaims"]
     verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
@@ -130,10 +130,18 @@ rules:
     resources: ["resourceclaims/status"]
     verbs: ["patch", "update"]
   {{- end }}
-  {{ if .Values.sync.toHost.resourceClaimTemplates.enabled}}
+  {{ if or .Values.sync.toHost.resourceClaimTemplates.enabled .Values.sync.toHost.computeDomains.enabled}}
   - apiGroups: ["resource.k8s.io"]
     resources: ["resourceclaimtemplates"]
     verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
+  {{- end }}
+  {{ if .Values.sync.toHost.computeDomains.enabled}}
+  - apiGroups: ["resource.nvidia.com"]
+    resources: ["computedomains"]
+    verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
+  - apiGroups: ["resource.nvidia.com"]
+    resources: ["computedomains/status"]
+    verbs: ["patch", "update"]
   {{- end }}
   {{- if .Values.sync.toHost.serviceAccounts.enabled }}
   - apiGroups: [""]
